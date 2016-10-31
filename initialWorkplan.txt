@@ -1,0 +1,15 @@
+Work plan
+
+  - Explore/understand in Coq/Agda what has been done in the formulation of Category Theory (but it appears to be underdeveloped)
+  - If it is as undeveloped as we think, need to start developing the theories of:
+    - limits
+    - colimits
+    - Kan extensions
+    - coends (including the calculus)
+    - presheaves
+    - profunctors
+    - species
+    - operads (related to species)
+    - Lawvere theories
+    - abstract syntax
+    - free constructions (P and F)
