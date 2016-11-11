@@ -1,0 +1,133 @@
+\documentclass[12pt, parskip]{scrartcl}
+\usepackage{a4wide,times}
+\usepackage{tikz}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage[nameinlink]{cleveref}
+\usepackage{multirow}
+
+\usepackage{CormorantGaramond}
+\usepackage[T1]{fontenc}
+
+\setkomafont{disposition}{\scshape\bfseries}
+
+\usepackage[numbers]{natbib}
+\bibliographystyle{plainnat}
+
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
+\DeclareMathOperator\prof{\ooalign{\hss$\Mapsfromchar$\hss\cr$\to$}}
+\DeclareMathOperator\ltri{\langle\mkern-3mu[}
+\DeclareMathOperator\rtri{]\mkern-3mu\rangle}
+
+\title{A Formal Calculus of Profunctors in Homotopy Type Theory Using Agda}
+\subtitle{A Part III Project Proposal}
+\date{}
+\author{Rupert Horlick (rh572) \\
+  \large Homerton College \\
+  \and
+  Prof M. Fiore (mpf23) \\
+  \large Christ's College}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  This project aims to formalise the theory of generalised species of structures \cite{fiore2008cartesian} in a proof assistant. To do this we must first formalise the calculus of profunctors and the free symmetric-monoidal completion construction. All of this will be done in the context of Homotopy Type Theory \cite{hottbook}, which provides a novel and natural foundation for formalising mathematical structures. The project will be written in Agda \cite{norell2007towards}, on top of the HoTT-Agda \cite{hottagda} library.
+\end{abstract}
+
+\section{Introduction, approach and outcomes}
+
+The main aim of this project is to formalise the theory of \emph{generalised species of structures} \cite{fiore2008cartesian}.
+
+A \emph{combinatorial species} \cite{joyal1986foncteurs} can be thought of intuitively as the set of shapes of a given datatype. For example, the set of all rooted binary trees with a finite set of nodes. Formally this is a functor from $\mathbf{B}$, the groupoid of finite sets and bijections, to $\mathbf{Set}$, the category of sets and functions. A \emph{generalised species} replaces $\mathbf{B}$ with $!\mathbb{A}$, for some small category $\mathbb{A}$, and $\mathbf{Set}$ with $\widehat{\mathbb{B}} = \mathbf{Set}^{\mathbb{B}^{\mathrm{op}}}$, for some small category $\mathbb{B}$. The $!$ construction on $\mathbb{A}$ is the \emph{free symmetric-monoidal completion}. This is analogous to to the free commutative-monoid construction on sets, given by the finite-multiset construction. A functor $\mathbb{A} \to \widehat{\mathbb{B}}$ is equivalent to a profunctor \cite{benabou1973distributeurs} $\mathbb{A} \prof \mathbb{B}$, that is a functor $\mathbb{B}^{\mathrm{op}} \times \mathbb{A} \to \mathbf{Set}$. Before implementing the calculus of generalised species we must first implement the \emph{calculus of profunctors} and the $!$ construction.
+
+The calculus of profunctors provides operations on profunctors together with algebraic laws that hold between them. We are interested in operations such as composition, product, and sum of profunctors. Furthermore, when the domain of the profunctor is a free symmetric-monoidal category we can also define differentiation. We can then prove laws such as Leibniz's rule and the chain rule. To define the various operations, we will first need to formalise categorical notions such as Kan extensions and (co)ends.
+
+For a small category $\mathbb{C}$, $!\mathbb{C}$ is its free symmetric-monoidal completion. This can be explicitly defined as the category whose objects are finite sequences $\ltri c_i \rtri$ of objects of $\mathbb{C}$ and whose morphisms are pairs of a permutation $\sigma$ and a sequence of maps $\ltri f_i : c_i \to c'_{\sigma i} \rtri$. It is not currently clear how this will be formalised and, in fact, this represents the first significant challenge of the project.
+
+\emph{Homotopy Type Theory} (HoTT) \cite{hottbook} is a new foundation for mathematics, based on Martin-L\"of Type Theory \cite{martin1975intuitionistic}. It interprets types as spaces in the topological sense and inhabitants of a type as points in the space. Two points in the space are equal if there is a \emph{path} between them. The paths between two points $a$ and $a'$ of $A$ constitute the identity type $\mathrm{Id}_A(a, a')$. We can then have paths between paths and so on. Each type therefore has an \emph{$\infty$-groupoid} structure. This makes HoTT a natural place to embed groupoidal notions. We will do just that, implementing the calculus of generalised species (for groupoids) internally, rather than implementing it in a Category Theory library on top of HoTT. This relies on the correspondence between categorical notions and type-theoretic ones shown in \Cref{typescorrespondence} (cf. \cite{lawvere1973metric}).
+
+The core of the project is the formalisation of the calculus of profunctors. Once that has been completed, we will attempt to find a construction corresponding to the free symmetric-monoidal completion. If this is successful, then we will formalise the theory of generalised species internally in the type theory. If we cannot formalise the $!$ construction internally, then we will try to do it on top of a Category Theory library. We can then implement the theory of generalised species at that level instead.
+
+\begin{table}[t]
+  \centering
+  \def\arraystretch{1.5}
+  \begin{tabular}{ll|l}
+    \multicolumn{2}{l|}{Categorical Notion} & Type \\
+    \hline
+    \multirow{2}{*}{Groupoid} & $|\mathbb{G}|$ & $A$ \\
+    & $\mathrm{Hom}_\mathbb{G}$ & $\mathrm{Id}_A$ \\
+    Presheaf & $\widehat{\mathbb{G}}$ & $A \to \mathcal{U}$ \\
+    Profunctor & $\mathbb{G} \prof \mathbb{H}$ & $A \to B \to \mathcal{U}$ \\
+    End & $\int_c$ & $\Pi_c$ \\
+    Coend & $\int^c$ & $\Sigma_c$ \\
+  \end{tabular}
+  \caption{Correspondence between categorical notions and types}
+  \label{typescorrespondence}
+\end{table}
+
+\newpage
+
+\section{Workplan}
+
+\begin{table}[h]
+  \def\arraystretch{1.5}
+  \begin{tabular}{rp{13.6cm}}
+    \textbf{28/11/2016} & Background reading. I will need to learn enough Category Theory and Homotopy Type Theory to be able to implement the constructions described above. I will also need to learn to use Agda, which I have not used before. \\
+    \textbf{05/12/2016} & Continue reading. It is not likely that I will be able to read all the necessary material, even in the first four weeks, but I will continue to read alongside development after this point. \\
+    \textbf{19/12/2016} & Internal implementation of background [enriched] categorical notions (I): presheaves, Yoneda, cartesian closed structure of presheaf categories, (co)ends, [weighted] (co)limits, etc. \\
+    \textbf{02/01/2017} & Internal implementation of background [enriched] categorical notions (II): Kan extensions, geometric realization, promonoidal structure and Day convolution, etc. \\
+    \textbf{16/01/2017} & Internal implementation of the calculus of profunctors.  The main property we want to prove is that profunctors form a compact closed bicategory with biproducts. \\
+    \textbf{30/01/2017} & Explore how to implement the free symmetric monoidal category construction. If we cannot figure this out then we will take the project in a different direction. \\
+    \textbf{13/02/2017} & Finish implementing the free symmetric monoidal category construction and prove all the needed combinatorial facts about it.  \\
+    \textbf{27/02/2017} & Begin implementation of the theory of generalised species of structures. \\
+    \textbf{13/03/2017} & Finish implementation of generalised species. \\
+    \textbf{27/03/2017} & Prove that generalised species form a cartesian closed bicategory. \\
+    \textbf{10/04/2017} & Explore the theories of operads and opetopes in the cartesian closed bicategory of generalised species of structures. \\
+    \textbf{24/04/2017} & Write up \\
+    \textbf{08/05/2017} & Write up and try to finish first draft \\
+    \textbf{22/05/2017} & Redraft and hand in a week ahead of time! \\
+  \end{tabular}
+\end{table}
+
+% \begin{figure}[b]
+%   \centering
+%   \tikzstyle{section} = [rectangle, draw=black, inner sep=0.2cm]
+%   \begin{tikzpicture}[node distance=1.5cm]
+%
+%       \node[section] (background)                         {Background};
+%       %\node[section] (set)         [below of=background]  {Category of sets, $\mathsf{Set}$}
+%       %  edge[<-] (background);
+%       \node (rellldeps) [below of=background] {};
+%       \node[section, node distance=3cm] (rel) [right of=rellldeps] {Calculus of relations, $\mathpzc{Rel}$}
+%         edge[<-] (background);
+%       \node[section, node distance=3cm] (freemon) [left of=rellldeps] {Free commutative monoids}
+%         edge[<-] (background);
+%       \node[section] (relll) [below of=rellldeps] {Relational model of Linear Logic}
+%         edge[<-] (freemon)
+%         edge[<-] (rel);
+%       \node[section] (dll) [below of=relll] {Differential Linear Logic}
+%         edge[<-] (relll);
+%       \node[section] (prof) [below of=dll] {Calculus of profunctors, $\mathpzc{Prof}$};
+%       \node (genspecdeps) [below of=prof] {};
+%       \node[section, node distance=3cm] (freecat) [left of=genspecdeps] {Free symmetric monoidal categories}
+%         edge[<-] (prof);
+%       \node[section, node distance=3cm] (species) [right of=genspecdeps] {Combinatorial species}
+%         edge[<-] (prof);
+%       \node[section] (genspec) [below of=genspecdeps] {Generalised species}
+%         edge[<-] (species)
+%         edge[<-] (freecat);
+%
+%       \draw[->] (rel.east) to[out=0, in=0] (prof.east);
+%
+%   \end{tikzpicture}
+%   \caption{Dependencies between work items}
+% \end{figure}
+
+\newpage
+
+\bibliography{proposal}
+
+\end{document}
