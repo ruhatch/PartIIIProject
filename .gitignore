@@ -1,3 +1,4 @@
+*.ptb
 *.aux
 *.glo
 *.idx
@@ -23,3 +24,4 @@
 *.synctex.gz
 *.fdb_latexmk
 *.fls
+*.xdv
