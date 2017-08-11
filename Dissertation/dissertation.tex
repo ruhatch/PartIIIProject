@@ -141,6 +141,10 @@
 }
 \parskip 1ex
 
+% TeXCount Parsing Rules
+
+%TC:envir tabular [] text
+
 \title{Generalised Species of Structures in Homotopy Type Theory Using Agda}
 \author{Rupert Horlick (rh572) \\
   \large Homerton College }
@@ -166,19 +170,26 @@
 
 \textbf{Generalised Species of Structures in Homotopy Type Theory Using Agda}
 
-The abstract goes here!
+There is an increasing interest in computer-assisted formalisation in Computer Science and Mathematics. The aim of this dissertation was to explore the use of some of the most cutting-edge tools and libraries in formalising the theory of generalised species of structures \citep{fiore2008cartesian}. Species of structures provide a framework for reasoning about data structures of all kinds, for example allowing us to prove that two structures are interchangeable. This could allow compiler optimisations that automatically choose the most efficient data structure for a particular application while preserving semantics. This theory includes a calculus of operations such as addition and even differentiation of structures. The formalisation embeds category-theoretic notions in the constructs of homotopy type theory, a novel approach to the formalisation of category theory.
 
 \newpage
 
-Word count is X
+Word count: 10,183 (calculated using TeXcount)
 
 \tableofcontents
 
 \mainmatter
 
 \chapter{Introduction}
+\label{chap:intro}
 
-This project formalises the theory of generalised species of structures \citep{fiore2008cartesian} embedded in homotopy type theory \citep{hottbook} using Agda \citep{norell2007towards}. The formalisation is built on the HoTT-Agda library \citep{hottagda}, a thorough implementation of homotopy type theory. The basis of the project is an interpretation of the constructs of homotopy type theory as categorical structures. This leads to a neat formalisation of the theory of generalised species within the type theory.
+There is an increasing interest in computer-assisted formalisation in Computer Science and Mathematics. From the lowest level hardware verification to the most abstract pure mathematics, computers have a role to play in making our lives easier. They can solve increasingly complex systems of constraints, hold vast pools of knowledge, and provide important modular organisation of proofs, leaving the most interesting and creative problems to the humans. This excitement is showcased by events such as Big Proof, to be held at the Isaac Newton Institute this summer.
+
+The aim of this dissertation was to explore the use of some of the most cutting-edge tools and libraries in formalising the theory of generalised species of structures \citep{fiore2008cartesian}. This theory aims to provide a category-theoretic calculus for bijective proofs of combinatorial identities, so it makes sense to do so constructively. Thus, Agda \citep{norell2007towards}, an implementation of Martin-L\"of type theory \citep{martin1975intuitionistic}, seemed like the tool of choice.
+
+We further wanted to explore this formalisation in the context of homotopy type theory \citep{hottbook}, an interpretation of Martin-L\"of type theory based on homotopy theory. A major goal of the homotopy type theory project is to provide a common foundation for mathematicians working in formalisation, so this project provides another test of its worth. The HoTT-Agda library \citep{hottagda} is a thorough, well-structured implementation of homotopy type theory that played a role in our decision to use Agda.
+
+There were two choices of how to formalise the theory. The first option was to develop category theory from scratch using some of the foundations outlined in \citep{hottbook}. The second option was to interpret the constructs of homotopy type theory as categorical structures, developing the theory internally to the type theory. This is a novel approach and the one we chose to follow.
 
 The project has three main parts. First the formalisation of presheaves, a type of categorical functor, along with operations for manipulating them. Second the formalisation of the free strict symmetric-monoidal completion that generalises the set-theoretic finite-multiset construction. This construction was the most significant challenge of the project and we ended up having two implementations of it. Lastly, with the first two parts, the formalisation of generalised species themselves. This includes the differential calculus of species, a set of operations and laws for combination and manipulation of species. This culminates in the species version of the Leibniz rule for differentiation.
 
@@ -188,7 +199,7 @@ The study of species began with the work of \citet{joyal1981une, joyal1986foncte
 
 Homotopy type theory began in 2012-13 during a Special Year on Univalent Foundations of Mathematics at the Institute of Advanced Study. The Special Year led to the official book \citep{hottbook}, a thorough look at homotopy type theory and its current applications. The PhD thesis of \citet{yorgey2014combinatorial} defines Joyal's species in the context of homotopy type theory, but was not formalised.
 
-The formalisation of a theory of groupoids in homotopy type theory requires higher structure. The work of \citet{hou2017higher} looks specifically at the formalisation of such structures in Agda. The work of \citet{kraus2014general} generalises some useful notions form the former that apply when defining actions on groupoids.
+The formalisation of a theory of groupoids in homotopy type theory requires higher structure. The work of \citet{hou2017higher} looks specifically at the formalisation of such structures in Agda. The work of \citet{kraus2014general} generalises some useful notions from the former that apply when defining actions on groupoids.
 
 \chapter{Background}
 
@@ -222,12 +233,12 @@ commutes. We can compose with a map $g : v \to w$ to form a new wedge $e~f : v \
 
 %What is the intuition for this?
 
-\section{Type Theory}
+\section{Homotopy Type Theory}
 \label{sec:HoTT}
 
 Homotopy type theory is a new area of mathematics that combines homotopy theory and Martin-L\"of type theory \citep{martin1975intuitionistic}. Homotopy theory deals with \textit{spaces} and \textit{continuous maps} between spaces, up to homotopy. A \textit{homotopy} between two continuous maps is a ``continuous'' deformation of one map into the other. Two spaces $X$ and $Y$ are \textit{homotopy equivalent}, $X \simeq Y$, if we have continuous maps in both directions, whose compositions both have homotopies to the identity maps.
 
-Homotopy type theory uses these spaces as the interpretation of type theory. The statement ``$a$ has type $A$'' or $a : A$, is taken to mean ``$a$ is a point in the space $A$''. Type constructions, such as functions and product, can be seen as homotopy-invariant constructions on spaces.
+Homotopy type theory uses these spaces as the interpretation of type theory. The statement ``$a$ has type $A$'' or $a : A$, is taken to mean ``$a$ is a point in the space $A$''. Type constructions, such as functions and product, can be seen as homotopy-invariant constructions on spaces. All types themselves have types, which are called universes, and are denoted $U$. Type universes are complicated and not well understood, but we will explore their analogy to the category theoretic $\mathbf{Set}$ in \Cref{chap:interp}.
 
 \paragraph{A Quick Note on Equality} To talk about homotopy type theory we need several notions of equality. \textit{Definitional equality}, denoted $\defeq$, allows us to make two terms equal by definition. \textit{Judgemental equality}, denoted $\equiv$, means that two terms compute to the same normal form based on existing definitions. Finally \textit{propositional equality}, denoted $=$, is internal to type theory and will be defined below.
 
@@ -249,21 +260,32 @@ $$\mathrm{rec}_{\Sigma_{(a : A)}~B(a)} : \Pi_{(C : \mathcal{U})}(\Pi_{(a : A)}~B
 
 The interpretation of types as spaces extends to the notion of propositional identity, $a =_A b$, of elements $a$ and $b$ of the same type $A$, treating it as the space of a paths $p : a \leadsto b$ from $a$ to $b$ in the space $A$. Terms $p : a =_A b$ of the identity type on $A$ are now exactly these paths.
 
-The path space is defined using an inductive type with one constructor, $$\idp : \Pi_{(a : A)}~a = a.$$ We denote this path for an element $a : A$ as $\idp_a$. There is also a notion of path composition, denoted, for two paths $p : a =_A b$ and $q : b =_A c$, $p \cdot q$. Note that the direction of composition is diagrammatical and therefore opposite to the more usual $q \cdot p$. Every path has an inverse, denoted $!p$. The identity path is its own inverse and any path composed with its own inverse gives the identity path, i.e.
-$$p \cdot {!}p = \idp_a$$
-and
-$$!p \cdot p = \idp_b.$$
-
-As the path space is an inductive type, it comes equipped with the introduction, elimination, and computation rules of an inductive type. The elimination rule is a case analysis on the constructors, but of course there is only one constructor. However, this constructor is only defined when both sides of the equality are exactly the same value, thus to perform the case analysis we must assume that this is the case. This leads to the elimination principle, which we refer to as path induction, that has the type
+The path space is defined using an inductive type with one constructor, $$\idp : \Pi_{(a : A)}~a = a.$$ We denote this path for an element $a : A$ as $\idp_a$. As the path space is an inductive type, it comes equipped with the introduction, elimination, and computation rules of an inductive type. The elimination rule is a case analysis on the constructors, but of course there is only one constructor. However, this constructor is only defined when both sides of the equality are exactly the same value, thus to perform the case analysis we must assume that this is the case. This leads to the elimination principle, which we refer to as path induction, that has the type
 $$\mathrm{elim}_{=A} : \Pi_{(C : \Pi_{(x,y : A)}~(x = y) \to \mathcal{U})} (\Pi_{(x:A)}~C(x,x,\idp_x)) \to \Pi_{(x,y : A)}\Pi_{(p : x = y)}~C(x,y,p)$$ and defining equation $$\mathrm{elim}_{=A}(C,c,x,x,\idp_x) \defeq c(x).$$ This says that to prove something about a path $p : x = y$, it is enough to show the property when $p$ is $\idp_x$ and $y$ is $x$.
 
-This principle is a very powerful reasoning tool and it allows us to define functions in Agda on paths by pattern matching on $\idp$. So for example we can define the useful function $$\ap : (f : A \to B) \to x = y \to f~x = f~y$$ as $$\ap~f~\idp \defeq \idp.$$ When the pattern match is made, the result type becomes $f~x = f~x$ which is inhabited by $\idp_{f~x}$.
+Path induction allows us to define basic constructions on, and properties of, paths. We have the notion of an inverse path
+\begin{align*}
+  &! : (x = y) \to (y = x) \\
+  &!\,\idp \defeq \idp
+\end{align*}
+and the notion of path composition, for two paths $p : a =_A b$ and $q : b =_A c$,
+\begin{align*}
+  &\_\cdot\_ : (x = y) \to (y = z) \to (x = z) \\
+  &\idp \cdot \idp \defeq \idp
+\end{align*}
+Note that the direction of composition is diagrammatical and therefore opposite to the more usual $q \cdot p$. Any path composed with its own inverse gives the identity path, i.e.
+$$p \cdot {!}p = \idp_a$$
+and
+$$!p \cdot p = \idp_b,$$
+both of which are easily shown using path induction.
+
+We can define the useful function $$\ap : (f : A \to B) \to x = y \to f~x = f~y$$ as $$\ap~f~\idp \defeq \idp.$$ When the pattern match on $\idp$ is made, the result type becomes $f~x = f~x$ which is inhabited by $\idp_{f~x}$.
 
 We can also define dependent paths. For a dependent type $B$ over $A$, a path $p : x = y$ in $A$, and two points $u : B~x$ and $v : B~y$, the type of dependent paths is the type of paths from $u$ to $v$ lying over $p$, denoted $u = v~[B \downarrow p]$. In the case that $p$ is $\idp$ this reduces to $u = v$, and by path induction we use this as the definition.
 
 \paragraph{Univalence}
 
-In type theory there are universes, $\mathcal{U}$, the elements of which are themselves types. There is an identity type $\mathrm{Id}_\mathcal{U}$, which relates the types, that is again interpreted as the space of paths $p : A \leadsto B$ in the space $\mathcal{U}$. The \textit{univalence axiom} states that such paths correspond exactly to homotopy equivalences, i.e. $$(A = B) \simeq (A \simeq B),$$ which allows us to identify isomorphic types. This may be seen as formalising the common practice of working ``up to isomorphism''.  The righthand direction of this equivalence already holds, because we can extract the equivalence defined by a path. Using path induction, for $\idp_A$ we have the function $\mathrm{id}_A : A \to A$ which is clearly an equivalence. The lefthand direction does not necessarily hold, so this is the part that is axiomatised.
+The universe, $\mathcal{U}$, has an identity type $\mathrm{Id}_\mathcal{U}$, which relates the types, that is again interpreted as the space of paths $p : A \leadsto B$ in the space $\mathcal{U}$. The \textit{univalence axiom} states that such paths correspond exactly to homotopy equivalences, i.e. $$(A = B) \simeq (A \simeq B),$$ which allows us to identify isomorphic types. This may be seen as formalising the common practice of working ``up to isomorphism''.  The right-hand direction of this equivalence already holds, because we can extract the equivalence defined by a path. Using path induction, for $\idp_A$ we have the function $\mathrm{id}_A : A \to A$ which is clearly an equivalence. The left-hand direction does not necessarily hold, so this is the part that is axiomatised.
 
 \paragraph{Truncation Levels}
 
@@ -308,9 +330,9 @@ At first sight, the universe, $\mathcal{U}$, could be interpreted as $\mathbf{Se
 
 In category theory $\mathbf{Set}$ is a Cartesian Closed Category, i.e. it has a terminal object, products, and exponentials. $\mathcal{U}$ also has this structure, with the unit type, $\top$, being the terminal object, product types being categorical products, and function spaces being categorical exponentials.
 
-Without going into too much detail at this point, using $\mathcal{U}$ as $\mathbf{Set}$ does not work for our purposes. To form more complex categorical constructions in the rest of this dissertation we will need to reason about the truncation level $\mathcal{U}$, but of course the universe is not truncated.
+However, this begins to break down when considering equality. Traditional sets use extensional equality: two sets are equal when they contain the same elements. The universe, however, interprets equality as homotopy equivalence under the univalence axiom.
 
-In \cref{sec:HoTT} we saw that types with truncation level $0$ can be viewed as sets and also that there is a sub-universe $\hSet$ containing all such types. This sub-universe can be interpreted as the category $\mathbf{Set}$, and allows reasoning about its truncation level.
+In \Cref{sec:HoTT} we saw that types with truncation level $0$ can be viewed as sets and also that there is a sub-universe $\hSet$ containing all such types. This sub-universe can more closely be interpreted as the category $\mathbf{Set}$. Further, later on we will need to reason about the truncation level of our interpretation of $\mathbf{Set}$, which is possible using $\hSet$.
 
 \paragraph{Types as Groupoids}
 
@@ -340,7 +362,7 @@ $$(\ap f~p) \cdot \varphi_y = \varphi_x \cdot (\ap g~p)$$
 and one can show that it holds for all
 $$\varphi : \Pi_{(x : C)}~f~x =_D g~x.$$ Indeed, by path induction, assume $p$ is $\idp$ and $y$ is $x$. The path now reduces to $$\varphi_x = \varphi_x$$ which is inhabited by $\idp$.
 
-Other basic type formers can be viewed as categorical constructions in this 2-category $\Gpd$. The product of types becomes the product of groupoids, with morphisms taken pointwise. The coproduct of types becomes the coproduct of groupoids. The path space here is only non-empty when both values are $\inl$ or $\inr$ and in this case matches the underlying one. $\Pi$ types/$\Sigma$ types become ends/coends, defined in \Cref{sec:cattheory}.
+Other basic type formers can be viewed as categorical constructions in this 2-category $\Gpd$. The product of types becomes the product of groupoids, with morphisms taken point-wise. The coproduct of types becomes the coproduct of groupoids. The path space here is only non-empty when both values are $\inl$ or $\inr$ and in this case matches the underlying one. $\Pi$ types/$\Sigma$ types become ends/coends, defined in \Cref{sec:cattheory}.
 
 \chapter{Presheaves}
 
@@ -377,10 +399,6 @@ A natural transformation, $\theta : \mathrm{Nat}(P , Q)$, between two presheaves
 For $P , Q : \widehat{C}$, this translates directly to the $\Pi$ type $$\mathrm{Nat}(P,Q) \defeq \prod_{(c : C)} P~c \to Q~c.$$ For an element of this type to be natural it needs to satisfy, for all $p : x = y$, $$\theta_y \circ~\mathrm{transport}~P~p = \mathrm{transport}~Q~p~\circ~\theta_x.$$
 This holds for all elements of the type $\mathrm{Nat}$ by path induction as, by the definition of $\mathrm{transport}$, we have $$\mathrm{transport}~P~\idp = \mathrm{id},$$ where $\mathrm{id}$ is the identity function and by the left and right unit laws of function composition we have to show $\theta_x = \theta_x$ which is inhabited by $\idp$.
 
-The category of presheaves is a Cartesian Closed Category (CCC), which means that it has a terminal object, products, and exponentials. The terminal object is the constant function on the unit type, $\top$. The product of two presheaves $P , Q : \widehat{C}$ is taken pointwise, so $$(P \times Q)~c \defeq P~c \times Q~c.$$ The exponential object for two presheaves is defined as $$(P \Rightarrow Q)~c \defeq (Y~c \times P) \Rightarrow Q.$$
-
-% Proofs that these form categorical terminal object, product, and exponential
-
 \section{Yoneda}
 
 The Yoneda functor, $Y : \mathbb{C} \to \widehat{\mathbb{C}}$, takes each object of $\mathbb{C}$ to the presheaf $$Y~c \defeq \mathbb{C}(c,-),$$ i.e. to the presheaf that for all $x \in \mathbb{C}$ returns the hom from $c$ to $x$. Our interpretation takes homs to identity types, which means that the Yoneda functor becomes $$Y~c~x \vcentcolon\equiv c = x.$$
@@ -389,6 +407,7 @@ The Yoneda Lemma states that given an object $c \in \mathbb{C}$, the set of natu
 
 Let us look at the Agda proof of the Yoneda Lemma to get an idea of the steps involved in formalisation.
 
+{\small
 \begin{verbatim}
 yonedaLemma : ∀ (P : prshf i C) (c : C)
             → P c ≃ nat (yon c) P
@@ -405,7 +424,7 @@ yonedaLemma P c = equiv f g (λ b → λ= (λ x → λ= (f-g b x))) (λ _ → id
     f-g : (b : nat (yon c) P) → (x : C) → (p : yon c x)
         → f (g b) x p == b x p
     f-g b x idp = idp
-\end{verbatim}
+\end{verbatim}}
 
 The proof looks like what one might write on paper. To show that this is an equivalence, it is enough to exhibit functions in each direction, \texttt{f} and \texttt{g}, and show that their compositions act like the respective identities.
 
@@ -415,6 +434,7 @@ The density formula is related to the Yoneda Lemma and will be used in several p
 $$P~c \simeq \Sigma_{(x : C)}~(P~x) \times (x = c)$$
 The Agda proof is again very similar to pen and paper, defining an equivalence by giving functions in both directions and showing their compositions act as identities.
 
+{\small
 \begin{verbatim}
 density : ∀ (P : prshf C) (c : C) → P c ≃ Σ C (λ x → (P x) × (x == c))
 density P c = equiv f g f-g (λ _ → idp)
@@ -429,9 +449,39 @@ density P c = equiv f g f-g (λ _ → idp)
 
     f-g : (b : Σ C (λ x → P x × (x == c))) → f (g b) == b
     f-g (_ , q , idp) = idp
-\end{verbatim}
+\end{verbatim}}
+
+\section{Cartesian Closure of $\widehat{C}$}
+
+The type of presheaves on a type $C$, $\widehat{C}$, forms a category, with objects the elements of $\widehat{C}$ and homs, for presheaves $P, Q : \widehat{C}$, the natural transformations $\Nat(P,Q)$. Identities of type $\Nat(P,Q)$ are given by
+$$\lambda\,c \to \id.$$
+Composition of $\Nat$s, for $\psi : \Nat(Q,R)$ and $\phi : \Nat(P,Q)$, is given by
+$$\lambda\,c \to \psi\,c \circ \phi\,c.$$
+This satisfies the unit and associativity laws by the units and associativity of function composition.
+
+The terminal object is the constantly $\top$ presheaf,
+$$\lambda\,\_ \to \top.$$
+For any other presheaf $P$, the terminal morphism is given by
+$$\lambda\,c\,p \to \mathrm{unit},$$
+and this is clearly unique.
+
+The product of two presheaves $P , Q : \widehat{C}$ is taken point-wise, so $$(P \times Q)~c \defeq P~c \times Q~c.$$ This is a product if it satisfies
+$$\Nat(P,Q \times R) \simeq \Nat(P,Q) \times \Nat(P,R).$$ The forward direction of this equivalence is
+$$f\,\phi \defeq ((\lambda\,c\,p \to \pi_1\,(\phi\,c\,p)) , (\lambda\,c\,p \to \pi_2\,(\phi\,c\,p))),$$
+and the backward direction is
+$$g\,(\phi_1 , \phi_2)\,c\,p \defeq (\phi_1\,c\,p , \phi_2\,c\,p).$$
+These are clearly inverse, so we have a product.
+
+The exponential object for two presheaves is defined as $$(P \Rightarrow Q)~c \defeq (Y~c \times P) \Rightarrow Q.$$ This is an exponential if it satisfies
+$$\Nat(P \times Q,R) \simeq \Nat(P,Q \Rightarrow R).$$
+The forward direction of this equivalence is
+$$f\,\phi\,c\,p\,(\idp , q) \defeq \phi\,c\,(p , q),$$
+and the backward direction is
+$$g\,\phi\,c\,(p , q) \defeq \phi\,c\,p\,c\,(\idp , q).$$
+Again these are clearly inverse, so we have an exponential.
 
 \section{Left Kan Extension}
+\label{sec:lans}
 
 % Talk about universality of this
 
@@ -456,8 +506,15 @@ $$\Lan_Y F \circ Y = F,$$ again proved using the density formula. The compositio
 $$\Lan_Y G \circ \Lan_Y F = \Lan_Y\,(\Lan_Y G \circ F),$$
 which is proved by a simple permutation of the components of the $\Sigma$ type.
 
-For any two monoids, $C$ and $D$, and a monoid homomorphism, $F : C \to \widehat{D}$, where the monoid of the codomain is given by Day Convolution, we have that $\Lan_Y F$ is also a monoid homomorphism with respect to Day Convolution in both the domain and codomain. The unit law is proved using a single application of the density formula and the unit law for $F$. The multiplication law is proved similarly with an application of the density formula and the multiplication law for $F$, however this time requires permutations of the components of the $\Sigma$ type before and after these are applied.
-
+For $F : C \to \widehat{D}$ and $P , Q : \widehat{C}$, the action of $\Lan_Y$ on the coproduct of $P$ and $Q$ is given by
+$$\Lan_Y F\,(\lambda\,c \to P\,c \sqcup Q\,c)\,d = \Lan_Y F\,P\,d \sqcup \Lan_Y F\,Q\,d.$$
+This comes from,
+\begin{align*}
+&\quad\ \Lan_Y F\,(\lambda\,c \to P\,c \sqcup Q\,c)\,d \\
+&\equiv \Sigma_{(c : C)}\,(P\,c \sqcup Q\,c) \times F\,c\,d \\
+&\simeq (\Sigma_{(c : C)}\,P\,c \times F\,c\,d) \sqcup (\Sigma_{(c : C)}\,Q\,c \times F\,c\,d) \\
+&\equiv (\Lan_Y F\,P\,d) \sqcup (\Lan_Y F\,Q\,d).
+\end{align*}
 % This is a universal extension in that for any other function $G : \hat{A} \to \hat{B}$ making the diagram commute factors
 
 \section{Day Convolution}
@@ -474,7 +531,7 @@ To form a commutative monoid these need to be accompanied by proofs of the left 
 $$\Pi_{(c : C)}~e \otimes c = c$$
 which for the Day Convolution becomes
 $$\Pi_{(P : \widehat{C})}~\dayid \daytensor P = P.$$ By function extensionality and the univalence axiom it is enough to show
-$$\Pi_{(P : \widehat{C})}\Pi_{(c : C)}~(\dayid \daytensor P)~c \simeq P~c.$$ Taking arbitary $P$ and $c$ we have
+$$\Pi_{(P : \widehat{C})}\Pi_{(c : C)}~(\dayid \daytensor P)~c \simeq P~c.$$ Taking arbitrary $P$ and $c$ we have
 \begin{align*}
   (\dayid \daytensor P)~c &\equiv \Sigma_{(c_1 : C)}\Sigma_{(c_2 : C)}~(c_1 = e) \times P~c_2 \times (c = c_1 \otimes c_2) \\
   &\simeq \Sigma_{(c_2 : C)}~P~c_2 \times \Sigma_{(c_1 : C)}~(c = c_1 \otimes c_2) \times (c_1 = e) &&\text{(commutativity of $\Sigma$)} \\
@@ -486,6 +543,7 @@ $$\Pi_{(P : \widehat{C})}\Pi_{(c : C)}~(\dayid \daytensor P)~c \simeq P~c.$$ Tak
 
 The Agda proof below gives a representative example of `equational reasoning' proofs in Agda. Equational reasoning proofs chain together several steps of an equivalence or equality and include the types of each step for clarity.
 
+{\small
 \begin{verbatim}
 ø-unit-l : (P : prshf C) → ∀ c → (ı ø P) c ≃ P c
 ø-unit-l P c =
@@ -522,20 +580,40 @@ The Agda proof below gives a representative example of `equational reasoning' pr
   P c
 
     ≃∎
-\end{verbatim}
+\end{verbatim}}
 
 Each step of the proof corresponds to one step of the pen-and-paper proof. The only difference in the formalisation is that the justifications have to specify exactly what context they are being applied in and how exactly they are being applied.
 
 We have a couple of results about monoid homomorphisms with respect to Day Convolution. Firstly the Yoneda functor is a homomorphism, because applied to $e$ it returns $\dayid$ and applied to $x \otimes y$, we can show that we get $Y\,x \daytensor Y\,y$.
 
+Secondly, for any two monoids, $C$ and $D$, and a monoid homomorphism, $F : C \to \widehat{D}$, where the monoid of the codomain is given by Day Convolution, we have that $\Lan_Y F$ is also a monoid homomorphism with respect to Day Convolution in both the domain and codomain. The unit law is proved using a single application of the density formula and the unit law for $F$. The multiplication law is proved similarly with an application of the density formula and the multiplication law for $F$, however this time requires permutations of the components of the $\Sigma$ type before and after these are applied.
+
 \section{$\mathcal{U}_n$-Presheaves}
 
-- Discuss Yoneda, Lans, and Day again here
+The definitions of the previous four sections were for $\mathcal{U}$-valued presheaves, but as mentioned in \Cref{chap:interp} we will have to restrict to $\hProp$ or $\hSet$-valued presheaves later on. We therefore reformalise the results from above in the context of $\mathcal{U}_n$-valued presheaves. This will require projecting out underlying types from the $\mathcal{U}_n$ as well as carrying around proofs of truncation levels.
 
-The definition of Day Convolution above is for $\mathcal{U}$-valued presheaves, but as mentioned in ? we will have to restrict to $\hSet$ or $\hGpd$-valued presheaves later on. We cannot na\"ively use the previous definition, extracting the underlying type from the $\hSet$/$\hGpd$, because the resulting type contains elements of $C$, which are not necessarily $\hSet$s/$\hGpd$s. We could restrict to the case that $C$ does have the correct level, however this will not work for us. Instead, when we are working with a type $C$ that has level $\Suc\,(\Suc n)$, we will want to use $\mathcal{U}_{(\Suc n)}$-valued presheaves. This is achieved using truncation as
+After redefining the type of presheaves we need to redefine natural transformations between presheaves to be truncated. This leads to the definition, for $C : \mathcal{U}_{\Suc\,(\Suc n)}$,
+$$\Nat(P,Q) \defeq ((\Pi_{(c : C)}\,\pi_1\,(P\,c) \to \pi_1\,(Q\,c)) , \mathrm{\Pi\mhyphen level}\,(\lambda\,c \to \mathrm{\to\mkern-4mu\mhyphen level} (\pi_2\,(Q\,c)))).$$
+This is absolutely typical of the changes that have to be made to the rest of the constructs we define. We add first projection functions to the types and use the second projections to reason about the truncation level.
+
+\paragraph{Yoneda}
+
+For some $C : \mathcal{U}_{\Suc\,(\Suc n)}$ we can redefine the Yoneda functor to return a $\mathcal{U}_{\Suc n}$-valued presheaf as
+$$Y\,c\,x \defeq ((c = x) , (\pi_2\,C)\,c\,x).$$ The proofs of the Yoneda lemma and the density formula remain largely unchanged once the types have been projected out.
+
+\paragraph{Left Kan Extension}
+
+The definition of the left Kan extension was a sigma type whose first component was of type $C$. Our $C$ is now of type $\mathcal{U}_{\Suc\,(\Suc n)}$, but the result should have type $\mathcal{U}_{\Suc n}$. Therefore we need to use the truncation operation, defined in \Cref{sec:HoTT} to restrict the truncation level of the result. The new definition is
+$$\Lan_Y F\,P\,d \defeq \| \Sigma_{(c : C)}\,P\,c \times F\,c\,d \|_{\Suc n}.$$
+The proofs of the properties of $\Lan$s now need to be modify to take this into account. The are all modified similarly to the proof of Day Convolution that we will look at in detail.
+
+\paragraph{Day Convolution}
+
+Again the definition contains a component of type $C$, so we need to use truncation. This leads to the definition
 $$(P \daytensor Q)~c \defeq \left\| \Sigma_{(c_1 : C)}\Sigma_{(c_2 : C)}~P~c_1 \times Q~c_2 \times (c = c_1 \otimes c_2)\right\|_{(\Suc n)}.$$
 
 The change is reflected in the Agda proof, which now becomes
+{\small
 \begin{verbatim}
 ø-unit-l : (P : prshf i C) → ∀ x → fst ((ı ø P) x) ≃ fst (P x)
 ø-unit-l P x =
@@ -573,7 +651,7 @@ The change is reflected in the Agda proof, which now becomes
   fst (P x)
 
       ≃∎
-\end{verbatim}
+\end{verbatim}}
 
 Each step is now performed within a $\mathrm{Trunc\mhyphen emap}~(\Suc n)$ which uses an equivalence within the truncation. Then there is an additional last step that removes the truncation, which is allowed because $P$ is a $\mathcal{U}_{(\Suc n)}$-valued presheaf.
 
@@ -640,6 +718,7 @@ Each step is now performed within a $\mathrm{Trunc\mhyphen emap}~(\Suc n)$ which
   $\Lan_Y$ of Yoneda & \texttt{lan-y-yon} \\
   $\Lan_Y$ Composed with Yoneda & \texttt{lan-y-$\circ$-yon} \\
   Composition of $\Lan_Y$s & \texttt{lan-y-$\circ$} \\
+  $\Lan_Y$ Composed with Coproduct & \texttt{lan-y-$\sqcup$} \\
 \end{tabular}
 \end{center}
 
@@ -739,7 +818,7 @@ adding a proof of $\isset D$.
 
 \paragraph{Groupoid Quotients}
 
-In \cref{sec:hgpdmodel} we will extend the $\SM$ model to further work for $\hGpd$s, which again requires a change to the quotient. The type will be restricted to being a groupoid rather than a set, which means there will be more path structure. Modifying \cref{eqn:setquot} below to use $\isgpd$, defined in \Cref{sec:HoTT}, gives one definition of a quotient at the groupoid level, but it is not general enough for our purposes. This definition would again be quotienting by $R^*$, but this time, because we are working with a groupoid, the reflexivity and transitivity paths do not necessarily coincide with the ones that $R$ may already have. To generalise, given an $R$ along with $$\Rrefl : \Pi_{(c : C)}~R~c~c,$$ a proof of reflexivity, and $$\Rtrans : \Pi_{(x , y , z : C)}~R~x~y \to R~y~z \to R~x~z,$$ a proof of transitivity, we want to force the former to coincide with $\idp$ and the latter to coincide with $\cdot$. This leads to the following HIT
+In \Cref{sec:hgpdmodel} we will extend the $\SM$ model to further work for $\hGpd$s, which again requires a change to the quotient. The type will be restricted to being a groupoid rather than a set, which means there will be more path structure. Modifying \Cref{eqn:setquot} below to use $\isgpd$, defined in \Cref{sec:HoTT}, gives one definition of a quotient at the groupoid level, but it is not general enough for our purposes. This definition would again be quotienting by $R^*$, but this time, because we are working with a groupoid, the reflexivity and transitivity paths do not necessarily coincide with the ones that $R$ may already have. To generalise, given an $R$ along with $$\Rrefl : \Pi_{(c : C)}~R~c~c,$$ a proof of reflexivity, and $$\Rtrans : \Pi_{(x , y , z : C)}~R~x~y \to R~y~z \to R~x~z,$$ a proof of transitivity, we want to force the former to coincide with $\idp$ and the latter to coincide with $\cdot$. This leads to the following HIT
 \begin{equation}
 \label{eqn:setquot}
 \begin{array}{l}
@@ -752,7 +831,7 @@ In \cref{sec:hgpdmodel} we will extend the $\SM$ model to further work for $\hGp
 \end{array}
 \end{equation}
 
-We not that one does not need to add symmetry, which would be given by
+We note that one does not need to add symmetry, which would be given by
 $$\Pi_{(x,y : C)}\Pi_{(r : R\,x\,y)}\,! (\rel x\,y\,r) = \rel y\,x\,(\Rsym r)$$
 because it can be derived from the other two. We have
 \begin{align*}
@@ -803,7 +882,9 @@ where $\dots$ represents the arguments to the elimination rule.
 
 \section{List Permutations}
 
-To define list permutations we will need a couple of auxilliary definitions. The first is the predicate of list membership $\in$ which for elements $c , c' : C$ and a list $l : \List C$ has constructors
+A list permutation is any reordering of a list of elements that preserves all the elements. This can be seen as a bijection between two lists. The underlying type of sequences that we will use for the $\SM C$ construction is that of $\List C$. We then want the path space to contain bijections between these lists, so we want to define list permutations as a relation that can be used with the quotient.
+
+To define list permutations we will need a couple of auxiliary definitions. The first is the predicate of list membership $\in$ which for elements $c , c' : C$ and a list $l : \List C$ has constructors
 $$\here : c == c' \to c' \in (c :: l)$$
 and
 $$\there : c' \in l \to c' \in (c :: l).$$
@@ -871,7 +952,7 @@ From the definition at the beginning of the chapter, the construction on categor
 
 Working with multisets, we get the notion of the empty multiset, $\varnothing$, corresponding to an empty sequence, and the union of multisets, $\cup$, corresponding to concatenation of sequences. These are the unit and associative operation of a monoid. We also get the singleton multiset containing $c$, $[c]$, corresponding to a singleton sequence.
 
-To be the \textit{free} construction the definition must have the corresponding universal property, which says that for every set $C$ and commutative monoid $M$, a function $f : C \to M$ uniquely extends to a function $f^\# : \SM~C \to M$ that is a monoid homomorphism, i.e. it satisfies the unit law $$f^\#~\varnothing = e$$ and the multiplication law $$f^\#~(x \cup y) = f^\#~x \otimes f^\#~y,$$ where $e$ is the unit of $M$ and $\otimes$ its commutative, associative operation, and further satisifies the singleton law
+To be the \textit{free} construction the definition must have the corresponding universal property, which says that for every set $C$ and commutative monoid $M$, a function $f : C \to M$ uniquely extends to a function $f^\# : \SM~C \to M$ that is a monoid homomorphism, i.e. it satisfies the unit law $$f^\#~\varnothing = e$$ and the multiplication law $$f^\#~(x \cup y) = f^\#~x \otimes f^\#~y,$$ where $e$ is the unit of $M$ and $\otimes$ its commutative, associative operation, and further satisfies the singleton law
 $$f^\#~[c] = f~c.$$ It should also satisfy a uniqueness property that for any other monoid homomorphism $h$ such that
 $$h~[c] = f~c$$ we should have that $$h = f^\#.$$
 
@@ -880,6 +961,7 @@ $$\SM C = \operatorname{SetQuot}_{\List C}(\ListPerm C),$$ quotienting the type 
 $$\varnothing \defeq \q \nil$$ and the singleton $$[c] \defeq \q~(c :: \nil).$$
 
 The next step is to define the union operation, which combines two values of $\mathrm{SM}~C$. Defining a function where the domain is a HIT requires the use of the associated induction principle. The union operation is non-dependent, so the definition uses the recursion rule for quotients defined above.
+{\small
 \begin{verbatim}
 _∪_ : SM C → SM C → SM C
 _∪_ =
@@ -896,7 +978,7 @@ _∪_ =
           (λ _ → =-preserves-set SM-is-set)
           (λ y → quot-rel (ListPerm-cong-++-l r y))
           (λ _ → prop-has-all-paths-↓ (SM-is-set _ _))))
-\end{verbatim}
+\end{verbatim}}
 Here the $\q$ from the quotient has become the operator $\mathtt{qp[\_]}$ and the $\rel$ has become $\mathtt{quot\mhyphen rel}$, because the set quotient was already defined in HoTT-Agda with these names.
 
 The union operation is a function of two arguments, so the recursion principle needs to be used twice. For the first application, the result is a function type. Function types have the same level as their codomain, so the whole function is a set because $\SM$ produces a set. To define $\qs$ for this operation we use the recursion rule a second time, with the first argument already in scope. The result is $\SM C$, which is a set. The $\qs$ at this second level defines the actual functionality of the union operation, which is to append the two underlying lists and then apply the quotient.
@@ -1001,7 +1083,7 @@ This time, however, proofs of simple properties become highly involved. For exam
 
 \subsection{$\hGpd$ Model}
 
-The $\hGpd$ model defines all the same concepts as the $\hSet$ model. However, due to the difficulty of coherence proofs at the groupoid level the following definitions are or rely on postulated results.
+The $\hGpd$ model defines all the same concepts as the $\hSet$ model. However, due to the difficulty of coherence proofs at the groupoid level the definitions of the $\rels$ paths for the Universal Extension, Universal Homomorphism Mult, Universal Applied to Singleton, and Universal Uniqueness were left postulated.
 
 \chapter{A Truncated Formalisation}
 
@@ -1044,7 +1126,7 @@ Intuitively, not leaking information corresponds to not caring what the value is
 \label{eqn:wconst}
 \Pi_{(c, c' : C)}~f~c = f~c'.
 \end{equation}
-We conjected that we should be able to use this property and found that \citet{kraus2014general} had indeed proved the equivalence
+We conjectured that we should be able to use this property and found that \citet{kraus2014general} had indeed proved the equivalence
 $$(\| C \| \to D) \simeq \Sigma_{(f : C \to D)}~\iswconst f,$$ for $D$ a set, where $\iswconst$ is exactly the property above, called weak-constancy. This property is not enough for the groupoid case however. The following path is needed to force higher paths to behave correctly in the groupoid case,
 \begin{equation}
 \label{eqn:coh}
@@ -1061,11 +1143,11 @@ for $D$ a groupoid.
 
 The universal extension has type
 $$(C \to M) \to \SM C \to M$$
-for a commutative monoid $M$. Given some $f : C \to M$ and some $(I , i , m , ti) : \SM C$ where $I$ is the indexing type and $i : I \to C$ the indexing function, we need to construct an $M$. The idea is to apply $f$ to each element indexed by $I$ and then to join these together using $M$'s associative operation. To actually run over the values in $I$ we need to use the backwards direction of the equivalence defined by $ti$, so \cref{eqn:gpdequiv} is necessary.
+for a commutative monoid $M$. Given some $f : C \to M$ and some $(I , i , m , ti) : \SM C$ where $I$ is the indexing type and $i : I \to C$ the indexing function, we need to construct an $M$. The idea is to apply $f$ to each element indexed by $I$ and then to join these together using $M$'s associative operation. To actually run over the values in $I$ we need to use the backwards direction of the equivalence defined by $ti$, so \Cref{eqn:gpdequiv} is necessary.
 
 A function is needed with the following type
 $$\monfold : (C \to M) \to (I \to C) \to (I \simeq \Fin m) \to M$$
-which when applied to $f$ and $i$ gives a function that is weakly-constant and coherent as defined in \cref{eqn:wconst,eqn:coh} respectively. Then finally applying the backwards direction of the equivalence to this we get a function $$\| I \simeq \Fin m\| \to M$$ which when applied to $ti$ gives us the required $M$. The function is defined as
+which when applied to $f$ and $i$ gives a function that is weakly-constant and coherent as defined in \Cref{eqn:wconst,eqn:coh} respectively. Then finally applying the backwards direction of the equivalence to this we get a function $$\| I \simeq \Fin m\| \to M$$ which when applied to $ti$ gives us the required $M$. The function is defined as
 $$\monfold f\,i\,eq = \monfold' m\,f \,(i \circ {\leftarrowtail eq})$$
  where $\leftarrowtail$ extracts the backwards direction of $eq$ and $\monfold'$ is defined as
 \begin{align*}
@@ -1194,7 +1276,9 @@ The multiplication law is more complex. It has type
 $$\Pi_{(x , y : \SM C)}~f^\#\,(x \cup y) = f^\#\,x \otimes f^\#\,y$$
 which takes two $\SM C$ values. We would like to perform induction on the size of $x$. The base case is provable because any $\SM C$ of size $0$ is equivalent to $\varnothing$ and then the left unit law applies. However, the inductive case doesn't work out. This is because we cannot split an arbitrary $\SM C$ of size $\Suc n$ to perform induction on the smaller component.
 
-Instead of induction on the size of $x$ we need a new tactic. Intuitively it should be the case that for some property $P$, if $P$ holds for all $\Fin n$ then $P$ should hold for all $I$ equivalent to some $\Fin n$. We want some elimination princple for $\SM C$ that allows us to only consider the case where $I$ is a $\Fin n$. We can construct such a principle using a lemma from \citep{hou2017higher}. The lemma states that for types $A$ and $B$ and a depedent type $C$ over $B$, for any surjective function $f : A \to B$ and any function $g : \Pi_{(a : A)}\,C\,(f\,a)$ such that
+Instead of induction on the size of $x$ we need a new tactic. Intuitively it should be the case that for some property $P$, if $P$ holds for all $\Fin n$ then $P$ should hold for all $I$ equivalent to some $\Fin n$. We want some elimination principle for $\SM C$ that allows us to only consider the case where $I$ is a $\Fin n$. We can construct such a principle using a lemma from \citep{hou2017higher}. First we define surjectivity in homotopy type theory as
+$$\mathrm{is\mhyphen surj}\,f \defeq \Pi_{(b : B)}\,\| \Sigma_{(a : A)}\,f\,a = b \|_{-1}.$$
+The lemma states that for types $A$ and $B$ and a dependent type $C$ over $B$, for any surjective function $f : A \to B$ and any function $g : \Pi_{(a : A)}\,C\,(f\,a)$ such that
 $$\mathrm{g\mhyphen is\mhyphen const} : \Pi_{(a , a' : A)}\Pi_{(p : f\,a = f\,a')}\,g\,a = g\,a'\,[C \downarrow p]$$
 there exists a function $h : \Pi_{(b : B)}\,C\,b$ such that $\Pi_{(a : A)}\,h\,(f\,a) = g\,a$.
 
@@ -1214,7 +1298,7 @@ which we can prove by induction because we have concrete values for the truncate
 
 \section{Agda Formalisation}
 
-The truncated $\SM$ defines all the concepts from \Cref{subsec:setformal}, therefore the following listings contain only auxilliary concepts used in defining the core ones.
+The truncated $\SM$ defines all the concepts from \Cref{subsec:setformal}, therefore the following listings contain only auxiliary concepts used in defining the core ones.
 
 \subsection{Imposed Finiteness}
 
@@ -1266,7 +1350,7 @@ The truncated $\SM$ defines all the concepts from \Cref{subsec:setformal}, there
 \end{tabular}
 \end{center}
 
-This formalisation turned out to require almost identical coherence conditions to the $\hGpd$ model, so again these were postulated.
+This formalisation turned out to require almost identical coherence conditions to the $\hGpd$ model, so again these were postulated. We were also not able to formalise the coherence of $\monfold$, so this was also postulated.
 
 \chapter{Generalised Species of Structures}
 
@@ -1329,7 +1413,7 @@ $$(Y \circ [\_])^\# = Y.$$
 
 Finally $\Lan_Y Y = \id$, so $\Lan_Y Y \circ F = F$.
 
-The right unit law and associativity follow from similar diagrams and applications of lemmas about $\Lan$s, and the universal property, so we have a category.
+The right unit law and associativity follow from similar diagrams and applications of lemmas about $\Lan$s, defined in \Cref{sec:lans,sec:dayconv}, and the universal property, so we have a category.
 
 % Go a bit more into which lemmas are used so we can reference them properly
 
@@ -1453,43 +1537,45 @@ We have
 
 \section{The Differential Calculus of Species}
 
-We now define the differential calculus of species \citep{fiore2005mathematical}, a set of operations on species that obey rules analagous to those of analysis.
+We now define the differential calculus of species \citep{fiore2005mathematical}, a set of operations on species that obey rules analogous to those of analysis.
 
 \paragraph{Addition} The $\boxplus$ operation behaves like addition. It is a binary operation that takes two species of the same type and returns a third. For two presheaves $P , Q : \spec{C}{D}$, the definition is
 $$(P \boxplus Q)\,d\,m \defeq (P\,d\,m) \sqcup (Q\,d\,m).$$
 The unit for this operation is
 $$0\,d\,m \defeq \bot$$
-which satisifies left and right unit laws. They hold because we have
+which satisfies left and right unit laws. They hold because we have
 $$\bot \sqcup C \simeq C$$
 and
 $$C \sqcup \bot \simeq C$$
 which we used when defining the union of the truncated version of $\SM$. This operation is also commutative and associative, again from the commutativity and associativity of $\sqcup$. This also distributes with species composition as
 $$\Pi_{(P : \spec{C}{D})}\Pi_{(Q , R : \spec{D}{E})}\,(Q \boxplus R) \circ P = (Q \circ P) \boxplus (R \circ P),$$
-which follows from the action of $\Lan_Y$ on coproducts.
+which follows from the action of $\Lan_Y$ on $\sqcup$, defined in \Cref{sec:lans}.
 
 \paragraph{Multiplication} The $\boxtimes$ operation behaves like multiplication. For two species $P , Q : \spec{C}{D}$, the definition is
 $$(P \boxtimes Q)\,d \defeq (P\,d \daytensor Q\,d).$$
 The unit for this operation is
 $$1\,d \defeq \hat{I},$$
-which satisifies the unit laws because of the unit laws for $\daytensor$. This operation is commutative and associative, again from $\daytensor$. It also distributes with species composition as
-$$\Pi_{(P : \spec{C}{D})}\Pi_{(Q , R : \spec{D}{E})}\,(Q \boxtimes R) \circ P = (Q \circ P) \boxtimes (R \circ P),$$ which follows from $\Lan_Y P^\#$ being a monoid homomorphism.
+which satisfies the unit laws because of the unit laws for $\daytensor$. This operation is commutative and associative, again from $\daytensor$. It also distributes with species composition as
+$$\Pi_{(P : \spec{C}{D})}\Pi_{(Q , R : \spec{D}{E})}\,(Q \boxtimes R) \circ P = (Q \circ P) \boxtimes (R \circ P),$$ which follows from $\Lan_Y P^\#$ being a monoid homomorphism, as defined in \Cref{sec:dayconv}.
 
 % Further we have distributivity laws, defined by...
 
 \paragraph{Differentiation} The $\partial$ operation behaves as a partial derivative. Given an $c : C$ and a species $P : \spec{C}{D}$ it gives a new $\spec{C}{D}$. The definition is
 $$\partial\,c\,P\,d\,m \defeq P\,d\,(m \cup [c]).$$
 
-For intuition about this operation, take $C$ and $D$ to be $\top$. Now $\SM \top \simeq \mathbb{N}$ and $(\top \to C) \simeq C$ so we can treat $P$ as having type $\mathbb{N} \to \mathcal{U}$. We interpret $P_n$ as the coefficients of a power series
+For intuition about this operation, take $C$ and $D$ to be $\top$. Now $$\spec{\top}{\top} \equiv \top \to \widehat{\SM \top} \simeq \widehat{\SM \top}.$$ $\SM \top$ corresponds to the groupoid of finite sets and bijections, $\mathbb{B}$, so $\widehat{\SM \top}$ corresponds to the species of \citet{joyal1981une}. For $P : \widehat{\SM \top}$ we get a functorial action on morphisms and uncurrying this we get
+$$P_n \times \widehat{\SM \top}(n,n) \to P_n,$$
+which can be seen as a quotient of $P_n$ by permutations. There are $n!$ such permutations, so we can use these as the coefficients of an exponential power series
 $$p(x) = \sum_{n \geq 0}~P_n~\frac{x^n}{n!}$$
 which differentiates to
 $$p'(x) = \sum_{n \geq 0}~P_n~\frac{x^{n-1}}{(n-1)!}.$$ We can see this as
 $$p'(x) = \sum_{i \geq 0}~P_{i+1}~\frac{x^i}{i!},$$ so differentiation shifts the index by 1. So now for an arbitrary $C$, we can shift in any direction $c$ by adding 1 value of this element to the multiset.
 
-This operation satisifies some commutativity property
+This operation satisfies some commutativity property
 $$\Pi_{(c , c' : C)}\,\partial\,c\,(\partial\,c'\,P) = \partial\,c'\,(\partial\,c\,P),$$ which holds by associativity and commutativity of $\cup$. It also satisfies
 $$\Pi_{(c : C)}\Pi_{(P , Q : \spec{C}{D})}\,\partial\,c\,(P \boxplus Q) = \partial\,c\,P \boxplus \partial\,c\,Q,$$
 and
-$$\Pi_{(c : C)}\,\partial\,c\,E = E,$$ where $E$ is the constantly $\top$ presheaf of two arguments, named for its analogy to Euler's number, $e$. Both of these hold judgementally.
+$$\Pi_{(c : C)}\,\partial\,c\,E = E,$$ where $E$ is the constantly $\top$ presheaf of two arguments, named for its analogy to Euler's number, $e$. Both of these hold judgmentally.
 
 We can also define the operation $\delta$, which given a species $\spec{C}{D}$ returns a species $\spec{C}{C \times D}$ and is defined by
 $$\delta\,P\,(c , d)\,m \defeq \partial\,c\,P\,d\,m.$$
@@ -1521,6 +1607,13 @@ We have
   &\quad\ (\Sigma_{(m_1 , m' : \SM C)}\,P\,d\,m_1 \times Q\,d\,(m' \cup [c]) \times (m = m_1 \cup m')) &&\text{(density formula twice)} \\
   &\equiv (\partial\,c\,P \boxtimes Q) \boxplus (P \boxtimes \partial\,c\,Q)
 \end{align*}
+The most difficult step in this proof is the \emph{combinatorial lemma} which has type
+\begin{align*}
+  &(m \cup [c] = m_1 \cup m_2) \\
+  &\simeq \\
+  &((\Sigma_{(m' : \SM C)}\,(m = m' \cup m_2) \times (m' \cup [c] = m_1)) \sqcup (\Sigma_{(m' : \SM C)}\,(m = m_1 \cup m') \times (m' \cup [c] = m_2)))
+\end{align*}
+This was left as a postulate, because the proof too complicated for the amount of time, but intuitively we should be able to split up $m$ based on $c$'s membership in $m_1$ or $m_2$.
 
 \section{Agda Formalisation}
 
@@ -1597,15 +1690,15 @@ We have
 \end{tabular}
 \end{center}
 
-The combinatorial lemma itself was left postulated.
-
 \chapter{Summary \& Conclusions}
 
-% Talk about inability to define infinite HITs/coherence conditions and reference Nicolai
+Overall the project was a success. We were able to define the differential calculus of generalised species of structures for groupoids, which was initially a stretch goal. Both formalisations of the $\SM$ construction led us to the edge of current research. The first required higher-dimensional HITs, the implementation of which was made simpler by the addition of rewrite rules to Agda during the development of this project. The second required stronger universal properties for working with truncated types.
 
-% Talk about Nicolai's idea of generalising Favonia's lemma for groupoids and how that might simplify the definitions of monoid-fold etc.
+The deliverable of the project, the Agda code itself, represents a significant contribution in terms of formalising this internalised theory of groupoids. It is a foundation on top of which other categorical theories and constructions could be built. At the time of writing we were not able to formalise a number of coherence conditions required by the $\SM$ construction, but we would like to continue working at these even after this project is over.
 
-% Talk about any proofs that were still postulated
+As mentioned in \Cref{chap:intro} this project represents another test of the worth of Agda and homotopy type theory in aiding formalisation. In general it was a pleasure to work with both of the tools. Programming with holes in Agda quickly became very natural. Homotopy type theory also started to feel very natural, especially coming from a computer science background. The main drawback of Agda was the manipulation of universes, which could be tedious at times.
+
+An interesting question that this project raises, and which has been explored by \citet{kraus2014general}, is that of formalising the theory with arbitrary truncation levels. It is certainly the case that the \emph{definition} of the $\SM$ construction from the truncated formalisation can be used for any (finite) truncation level, but writing the proofs at each subsequent level requires another set of coherence conditions. Whether these coherence conditions, and more importantly proofs of them, can be defined in some level independent way remains an open question. It is conjectured that it is not possible to define the coherence conditions up to infinity within the type theory.
 
 \newpage
 
